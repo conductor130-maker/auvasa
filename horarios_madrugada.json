@@ -201,7 +201,7 @@
         {
       "id": "P1",
       "nombre": "Polígono San Cristóbal (Laboral)",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 152,
       "recorridos": [
         {
@@ -234,7 +234,7 @@
            {
       "id": "P2",
       "nombre": "Polígono San Cristóbal (Laboral)",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 153,
       "recorridos": [
         {
@@ -275,7 +275,7 @@
            {
       "id": "P3",
       "nombre": "La Victoria – Pol. San Cristóbal",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 154,
       "recorridos": [
         {
@@ -316,7 +316,7 @@
         {
       "id": "P6",
       "nombre": "La Victoria – Pol. Argales",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 155,
       "recorridos": [
         {
@@ -357,7 +357,7 @@
         {
       "id": "P7",
       "nombre": "La Victoria – Pol. Argales",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 156,
       "recorridos": [
         {
@@ -398,7 +398,7 @@
         {
       "id": "P13",
       "nombre": "Covaresa – Pol. San Cristóbal",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 157,
       "recorridos": [
         {
@@ -439,7 +439,7 @@
         {
       "id": "PSC1",
       "nombre": "PSC1: Polígono San Cristóbal",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 158,
       "recorridos": [
         {
@@ -480,7 +480,7 @@
         {
       "id": "PSC2",
       "nombre": "PSC2: Polígono San Cristóbal",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 159,
       "recorridos": [
         {
@@ -521,7 +521,7 @@
         {
       "id": "PSC3",
       "nombre": "PSC3: Las Flores – Pol. Argales",
-      "tipo": "laboral",
+      "tipo": "matinal",
       "paginaRecorridoPDF": 160,
       "recorridos": [
         {
