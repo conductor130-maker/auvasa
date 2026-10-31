@@ -1,7 +1,7 @@
 {
   "lineas": [
     {
-      "id": "1",
+       "id": "1",
       "nombre": "Línea de Prueba 1",
       "tipo": "ordinaria",
       "horarios": []
