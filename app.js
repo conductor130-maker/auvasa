@@ -18,7 +18,6 @@ async function cargarDatos() {
     try {
       DATOS = JSON.parse(texto);
     } catch (jsonErr) {
-      // Si el JSON está mal, extraemos la línea exacta del error
       const match = jsonErr.message.match(/position (\d+)/);
       let extra = '';
       if (match) {
@@ -27,7 +26,7 @@ async function cargarDatos() {
         const linea = antes.split('\n').length;
         extra = ' (aprox. línea ' + linea + ')';
       }
-      throw new Error('JSON inválido' + extra + ': ' + jsonErr.message + '. Valídalo en https://jsonlint.com');
+      throw new Error('JSON inválido' + extra + ': ' + jsonErr.message);
     }
     
     if (!DATOS.lineas || !Array.isArray(DATOS.lineas)) {
@@ -80,7 +79,9 @@ function renderTipos() {
 function mostrarLineas(tipoId) {
   const tipo = TIPOS.find(t => t.id === tipoId);
   document.getElementById('titulo-tipo').textContent = tipo.nombre;
-  const lineas = DATOS.lineas.filter(l => l.tipo === tipoId);
+  
+  // Filtramos las líneas, pero si por lo que sea alguna no tiene "tipo", no rompemos la app
+  const lineas = DATOS.lineas.filter(l => l && l.tipo === tipoId);
   const grid = document.getElementById('grid-lineas');
   
   if (lineas.length === 0) {
@@ -88,7 +89,7 @@ function mostrarLineas(tipoId) {
   } else {
     grid.innerHTML = lineas.map(l =>
       '<div class="tarjeta-linea">' +
-        '<div><span class="num">' + l.id + '</span><div class="nombre">' + l.nombre + '</div></div>' +
+        '<div><span class="num">' + (l.id || '?') + '</span><div class="nombre">' + (l.nombre || 'Sin nombre') + '</div></div>' +
         '<div class="botones-linea">' +
           '<button class="btn-recorrido" onclick="verRecorrido(\'' + l.id + '\')">🗺️ Recorrido</button>' +
           '<button class="btn-horario" onclick="verGruposCoches(\'' + l.id + '\')">⏱️ Horarios</button>' +
@@ -101,13 +102,14 @@ function mostrarLineas(tipoId) {
 
 function verRecorrido(id) {
   const linea = DATOS.lineas.find(l => l.id === id);
+  if (!linea) return;
   lineaActual = linea;
   document.getElementById('titulo-recorrido').textContent = 'Línea ' + linea.id + ' – ' + linea.nombre;
   let html = '';
-  if(linea.recorridos) {
+  if(linea.recorridos && Array.isArray(linea.recorridos)) {
     linea.recorridos.forEach(r => {
-      html += '<div class="bloque-recorrido"><h3>' + r.sentido + '</h3><ol>' +
-        r.paradas.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+      html += '<div class="bloque-recorrido"><h3>' + (r.sentido || '') + '</h3><ol>' +
+        (r.paradas || []).map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
     });
   }
   if (linea.letreros && linea.letreros.length) {
@@ -127,6 +129,7 @@ function verRecorrido(id) {
 
 function verGruposCoches(id) {
   const linea = DATOS.lineas.find(l => l.id === id);
+  if (!linea) return;
   lineaActual = linea;
   document.getElementById('titulo-horarios').textContent = 'Turnos Línea ' + linea.id;
   document.getElementById('filtros-dia').innerHTML = '';
@@ -142,8 +145,8 @@ function verGruposCoches(id) {
 
   cont.innerHTML = listaGruposFiltrada.map((h, i) =>
     '<button class="boton-grupo" onclick="abrirGrupo(' + i + ')">' +
-      '<div class="grupo-titulo">' + h.nombre + '</div>' +
-      '<div class="grupo-sub">' + h.tipoDia + '</div>' +
+      '<div class="grupo-titulo">' + (h.nombre || 'Grupo') + '</div>' +
+      '<div class="grupo-sub">' + (h.tipoDia || '') + '</div>' +
       '<div class="grupo-accion">Elegir horario ▶</div>' +
     '</button>'
   ).join('');
@@ -153,6 +156,7 @@ function verGruposCoches(id) {
 
 function abrirGrupo(grupoIndex) {
   const grupo = listaGruposFiltrada[grupoIndex];
+  if (!grupo) return;
   grupoActual = grupo;
 
   let coches = [];
@@ -171,7 +175,7 @@ function abrirGrupo(grupoIndex) {
   }
 
   grupoActual.cochesDetalle = coches;
-  document.getElementById('titulo-coches').textContent = 'Línea ' + lineaActual.id + ' · ' + grupo.nombre;
+  document.getElementById('titulo-coches').textContent = 'Línea ' + lineaActual.id + ' · ' + (grupo.nombre || '');
 
   if (!coches.length) {
     document.getElementById('lista-coches').innerHTML = '<div style="padding:20px;text-align:center;">No hay turnos cargados.</div>';
@@ -183,7 +187,7 @@ function abrirGrupo(grupoIndex) {
   lista.innerHTML = coches.map((coche, i) =>
     '<button class="btn-coche" onclick="verDetalleCoche(' + i + ')">' +
       '<div class="info-coche">' +
-        '<span class="titulo-coche">' + coche.nombre + '</span>' +
+        '<span class="titulo-coche">' + (coche.nombre || '') + '</span>' +
         '<span class="retirada">' + (coche.retirada || '') + '</span>' +
       '</div>' +
       '<span class="primera">' + (coche.primeraSalida || '—') + '</span>' +
@@ -196,6 +200,7 @@ function abrirGrupo(grupoIndex) {
 function verDetalleCoche(cocheIndex) {
   cocheIndexActual = cocheIndex;
   const coche = grupoActual.cochesDetalle[cocheIndex];
+  if (!coche) return;
   const cont = document.getElementById('detalle-horario');
 
   const primera = coche.salidas && coche.salidas[0];
@@ -210,8 +215,8 @@ function verDetalleCoche(cocheIndex) {
   }
 
   html += '<div class="tarjeta-principal">' +
-    '<h3>L' + lineaActual.id + ' · ' + grupoActual.nombre + ' · ' + coche.nombre + '</h3>' +
-    '<div class="sub">' + grupoActual.tipoDia + '</div>' +
+    '<h3>L' + lineaActual.id + ' · ' + (grupoActual.nombre || '') + ' · ' + (coche.nombre || '') + '</h3>' +
+    '<div class="sub">' + (grupoActual.tipoDia || '') + '</div>' +
     '<div class="dato"><span>Primera salida</span><strong>' + (primera ? primera.hora + ' (' + primera.cabecera + ')' : '—') + '</strong></div>' +
     '<div class="dato"><span>Última salida</span><strong>' + (ultima ? ultima.hora + ' (' + ultima.cabecera + ')' : '—') + '</strong></div>' +
     '<div class="dato"><span>Retirada</span><strong>' + (coche.retirada || '—') + '</strong></div>' +
@@ -239,7 +244,7 @@ function verDetalleCoche(cocheIndex) {
       html += '</tbody></table>';
     } else {
       html += '<table class="tabla-pdf"><thead><tr><th>Cabecera</th><th>Hora</th></tr></thead><tbody>' +
-        coche.salidas.map(s => '<tr><td>' + s.cabecera + '</td><td>' + s.hora + '</td></tr>').join('') + '</tbody></table>';
+        coche.salidas.map(s => '<tr><td>' + (s.cabecera || '') + '</td><td>' + (s.hora || '') + '</td></tr>').join('') + '</tbody></table>';
     }
   }
 
@@ -299,7 +304,8 @@ function renderFavoritos() {
 function buscar(t) {
   if (!t) { document.getElementById('resultadosBusqueda').innerHTML = ''; return; }
   const cont = document.getElementById('resultadosBusqueda');
-  const res = DATOS.lineas.filter(l => l.id.toLowerCase().includes(t.toLowerCase()) || l.nombre.toLowerCase().includes(t.toLowerCase()));
+  if (!DATOS.lineas) return;
+  const res = DATOS.lineas.filter(l => l && (l.id.toLowerCase().includes(t.toLowerCase()) || l.nombre.toLowerCase().includes(t.toLowerCase())));
   cont.innerHTML = res.map(l => '<div class="resultado" onclick="document.getElementById(\'barraBusqueda\').classList.add(\'oculto\'); verRecorrido(\'' + l.id + '\')">Línea ' + l.id + ' - ' + l.nombre + '</div>').join('');
 }
 
