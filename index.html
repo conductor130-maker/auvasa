@@ -28,7 +28,6 @@
 </header>
 
 <main id="app">
-
   <!-- PANTALLA 1: Tipos -->
   <section id="pantalla-tipos" class="pantalla activa">
     <div class="grid-tipos" id="grid-tipos"></div>
@@ -48,7 +47,7 @@
     <div id="contenido-recorrido"></div>
   </section>
 
-  <!-- PANTALLA 3B: Horarios (Grupos de coches) -->
+  <!-- PANTALLA 3B: Horarios (Grupos) -->
   <section id="pantalla-horarios" class="pantalla">
     <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <h2 id="titulo-horarios"></h2>
@@ -63,7 +62,7 @@
     <div id="lista-coches"></div>
   </section>
 
-  <!-- PANTALLA 4: Detalle del turno -->
+  <!-- PANTALLA 4: Detalle del horario -->
   <section id="pantalla-detalle" class="pantalla">
     <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <div id="detalle-horario"></div>
@@ -75,7 +74,6 @@
     <h2>⭐ Mis Turnos Favoritos</h2>
     <div id="contenido-favoritos"></div>
   </section>
-
 </main>
 
 <!-- Modal Favoritos -->
@@ -83,7 +81,7 @@
   <div class="modal-contenido">
     <h3>Añadir a favoritos</h3>
     <label for="nombreGrupo">Nombre del grupo:</label>
-	<input type="text" id="nombreGrupo" placeholder="Ej: Diario invierno, Sábados...">
+    <input type="text" id="nombreGrupo" placeholder="Ej: Diario invierno, Sábados...">
     <div id="gruposExistentes"></div>
     <div class="modal-botones">
       <button class="btn-secundario" onclick="cerrarModal()">Cancelar</button>
@@ -92,6 +90,6 @@
   </div>
 </div>
 
-<script src="app.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
