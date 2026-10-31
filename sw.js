@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auvasa-v651';
+const CACHE_NAME = 'auvasa-v700';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
