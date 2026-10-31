@@ -7,37 +7,63 @@ let cocheIndexActual = 0;
 let listaGruposFiltrada = [];
 let favoritoPendiente = null;
 
-// ---------- CARGA DE DATOS BLINDADA ----------
 async function cargarDatos() {
   const grid = document.getElementById('grid-tipos');
+  grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:20px;">Cargando horarios...</p>';
+  
+  const archivos = [
+    'horarios_ordinarias.json',
+    'horarios_madrugada.json',
+    'horarios_lanzaderas.json',
+    'horarios_buho.json',
+    'horarios_servicios.json',
+    'horarios_personal.json',
+    'horarios_manual.json'
+  ];
+
   try {
-    const res = await fetch('./horarios.json');
-    if (!res.ok) throw new Error('No se pudo cargar horarios.json (HTTP ' + res.status + ')');
-    const texto = await res.text();
-    
-    try {
-      DATOS = JSON.parse(texto);
-    } catch (jsonErr) {
-      const match = jsonErr.message.match(/position (\d+)/);
-      let extra = '';
-      if (match) {
-        const pos = parseInt(match[1]);
-        const antes = texto.substring(0, pos);
-        const linea = antes.split('\n').length;
-        extra = ' (aprox. línea ' + linea + ')';
+    let todasLasLineas = [];
+    for (const archivo of archivos) {
+      try {
+        const res = await fetch('./' + archivo);
+        if (res.ok) {
+          const texto = await res.text();
+          const json = JSON.parse(texto);
+          if (json.lineas && Array.isArray(json.lineas)) {
+            todasLasLineas = todasLasLineas.concat(json.lineas);
+          }
+        }
+      } catch (e) {
+        console.warn('Error en ' + archivo + ': ' + e.message);
       }
-      throw new Error('JSON inválido' + extra + ': ' + jsonErr.message);
     }
-    
-    if (!DATOS.lineas || !Array.isArray(DATOS.lineas)) {
-      throw new Error('El JSON no tiene la propiedad "lineas" o no es una lista.');
-    }
-    
+
+    DATOS.lineas = todasLasLineas;
+    if (!DATOS.lineas || DATOS.lineas.length === 0) throw new Error('No se pudo cargar ninguna línea.');
     renderTipos();
   } catch (e) {
-    console.error('Error cargando datos:', e);
-    grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;background:#fff;color:#E30613;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);"><h3>⚠️ Error cargando horarios</h3><p style="margin-top:10px;font-weight:bold;">' + e.message + '</p></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;background:#fff;color:#E30613;border-radius:10px;"><h3>Error cargando horarios</h3><p>' + e.message + '</p></div>';
   }
+}
+
+const TIPOS = [
+  { id: 'ordinaria', emoji: '🚌', nombre: 'Líneas Ordinarias' },
+  { id: 'matinal', emoji: '🏭', nombre: 'Matinales y Polígonos' },
+  { id: 'laboral', emoji: '🏭', nombre: 'Polígonos' },
+  { id: 'buho', emoji: '🦉', nombre: 'Búhos' },
+  { id: 'futbol', emoji: '⚽', nombre: 'Fútbol' },
+  { id: 'lanzadera', emoji: '🎓', nombre: 'Lanzaderas y Uni' },
+  { id: 'personal', emoji: '🚐', nombre: 'Personal' },
+  { id: 'manual', emoji: '📖', nombre: 'Manual y Normativa' }
+];
+
+function renderTipos() {
+  const grid = document.getElementById('grid-tipos');
+  grid.innerHTML = TIPOS.map(t =>
+    '<button class="boton-tipo tipo-' + t.id + '" onclick="mostrarLineas(\'' + t.id + '\')">' +
+      '<span class="emoji">' + t.emoji + '</span><span>' + t.nombre + '</span>' +
+    '</button>'
+  ).join('');
 }
 
 function irA(id) {
@@ -56,31 +82,9 @@ function navegar(id) {
   irA(id);
 }
 
-const TIPOS = [
-  { id: 'ordinaria', emoji: '🚌', nombre: 'Líneas Ordinarias' },
-  { id: 'matinal', emoji: '🌅', nombre: 'Líneas Matinales' },
-  { id: 'laboral', emoji: '🏭', nombre: 'Laborales y Polígonos' },
-  { id: 'buho', emoji: '🦉', nombre: 'Líneas Búho' },
-  { id: 'futbol', emoji: '⚽', nombre: 'Servicios Fútbol' },
-  { id: 'lanzadera', emoji: '🎓', nombre: 'Lanzaderas y Univ.' },
-  { id: 'personal', emoji: '🚐', nombre: 'Coches de Personal' },
-  { id: 'manual', emoji: '📖', nombre: 'Manual y Normativa' }
-];
-
-function renderTipos() {
-  const grid = document.getElementById('grid-tipos');
-  grid.innerHTML = TIPOS.map(t =>
-    '<button class="boton-tipo tipo-' + t.id + '" onclick="mostrarLineas(\'' + t.id + '\')">' +
-      '<span class="emoji">' + t.emoji + '</span><span>' + t.nombre + '</span>' +
-    '</button>'
-  ).join('');
-}
-
 function mostrarLineas(tipoId) {
   const tipo = TIPOS.find(t => t.id === tipoId);
   document.getElementById('titulo-tipo').textContent = tipo.nombre;
-  
-  // Filtramos las líneas, pero si por lo que sea alguna no tiene "tipo", no rompemos la app
   const lineas = DATOS.lineas.filter(l => l && l.tipo === tipoId);
   const grid = document.getElementById('grid-lineas');
   
@@ -106,7 +110,7 @@ function verRecorrido(id) {
   lineaActual = linea;
   document.getElementById('titulo-recorrido').textContent = 'Línea ' + linea.id + ' – ' + linea.nombre;
   let html = '';
-  if(linea.recorridos && Array.isArray(linea.recorridos)) {
+  if(linea.recorridos) {
     linea.recorridos.forEach(r => {
       html += '<div class="bloque-recorrido"><h3>' + (r.sentido || '') + '</h3><ol>' +
         (r.paradas || []).map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
