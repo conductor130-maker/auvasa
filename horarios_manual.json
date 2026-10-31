@@ -1,0 +1,106 @@
+{
+  "lineas": [
+       {
+      "id": "MANUAL",
+      "nombre": "Manual y Normativa",
+      "tipo": "manual",
+      "paginaRecorridoPDF": 2,
+      "recorridos": [
+        {
+          "sentido": "Índice del Manual",
+          "paradas": [
+            "1. Servicio (Inicio, Máquina CUBE, Fonías...)",
+            "2. Títulos de viaje",
+            "3. Servicios y refuerzos de líneas",
+            "4. Tráfico (Carriles bus, ciclocarril)",
+            "5. Acceso de usuarios/as a vehículos",
+            "6. Talleres y cocheras",
+            "7. Varios",
+            "8. Protocolo de actuación arranque de coches"
+          ]
+        }
+      ],
+      "letreros": [],
+      "notas": [
+        "Este apartado es para consultar las normas de la empresa y los protocolos de actuación."
+      ],
+      "horarios": [
+        {
+          "nombre": "Normas Generales",
+          "tipoDia": "Manual",
+          "coches": null,
+          "paginaPDF": 5,
+          "descanso": "—",
+          "cochesDetalle": [
+            {
+              "nombre": "1.1 Inicio del Servicio",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "1.3 Máquina CUBE",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "1.4 Fonías dentro y fuera de los autobuses",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "1.5 Letrero FUERA DE SERVICIO",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "1.9 Parar Motores",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            }
+          ]
+        },
+        {
+          "nombre": "Protocolo de Arranque",
+          "tipoDia": "Manual",
+          "coches": null,
+          "paginaPDF": 8,
+          "descanso": "—",
+          "cochesDetalle": [
+            {
+              "nombre": "8.1 Actuaciones para toda la flota",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "8.2.1 MAN A21: (60 – 69)",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "8.2.3 MERCEDES CITARO: (1 al 5)",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "8.2.11 SOLARIS GNC, 12 metros (337 al 368)",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            },
+            {
+              "nombre": "8.2.13 IRIZAR E-TRAM (601 al 611)",
+              "primeraSalida": "Leer en PDF",
+              "retirada": "",
+              "salidas": []
+            }
+                
+                ]}
+        ]}]}
