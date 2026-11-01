@@ -16,7 +16,7 @@ async function cargarDatos() {
     'horarios_madrugada.json',
     'horarios_lanzaderas.json',
     'horarios_buho.json',
-    'horarios_servicios.json',
+    'horarios_futbol.json',
     'horarios_personal.json',
     'horarios_manual.json'
   ];
