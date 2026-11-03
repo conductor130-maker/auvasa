@@ -12,6 +12,9 @@
 </head>
 <body>
 
+<!-- BOTÓN FLOTANTE PARA VOLVER -->
+<button id="btn-volver-flotante" class="btn-flotante oculto" onclick="volverAtras()">← Atrás</button>
+
 <header class="cabecera">
   <div class="cabecera-top">
     <h1>🚌 AUVASA Horarios</h1>
@@ -28,55 +31,48 @@
 </header>
 
 <main id="app">
-  <!-- PANTALLA 1: Tipos -->
   <section id="pantalla-tipos" class="pantalla activa">
     <div class="grid-tipos" id="grid-tipos"></div>
   </section>
 
-  <!-- PANTALLA 2: Líneas -->
   <section id="pantalla-lineas" class="pantalla">
-    <button class="btn-volver" onclick="irA('pantalla-tipos')">← Volver</button>
     <h2 id="titulo-tipo"></h2>
     <div class="grid-lineas" id="grid-lineas"></div>
   </section>
 
-  <!-- PANTALLA 3A: Recorrido -->
   <section id="pantalla-recorrido" class="pantalla">
-    <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <h2 id="titulo-recorrido"></h2>
     <div id="contenido-recorrido"></div>
   </section>
 
-  <!-- PANTALLA 3B: Horarios (Grupos) -->
   <section id="pantalla-horarios" class="pantalla">
-    <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <h2 id="titulo-horarios"></h2>
     <div id="filtros-dia"></div>
     <div id="lista-horarios"></div>
   </section>
 
-  <!-- PANTALLA 3C: Coches (Turnos) -->
   <section id="pantalla-coches" class="pantalla">
-    <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <h2 id="titulo-coches"></h2>
     <div id="lista-coches"></div>
   </section>
 
-  <!-- PANTALLA 4: Detalle del horario -->
   <section id="pantalla-detalle" class="pantalla">
-    <button class="btn-volver" onclick="volverAtras()">← Volver</button>
     <div id="detalle-horario"></div>
   </section>
 
-  <!-- PANTALLA FAVORITOS -->
+  <!-- NUEVA PANTALLA PARA EL MANUAL -->
+  <section id="pantalla-manual" class="pantalla">
+    <h2 id="titulo-manual">Manual y Normativa</h2>
+    <div id="lista-manual" class="grid-tipos" style="grid-template-columns: 1fr; gap: 10px;"></div>
+    <div id="contenido-manual" class="bloque-recorrido" style="margin-top: 20px;"></div>
+  </section>
+
   <section id="pantalla-favoritos" class="pantalla">
-    <button class="btn-volver" onclick="irA('pantalla-tipos')">← Volver</button>
     <h2>⭐ Mis Turnos Favoritos</h2>
     <div id="contenido-favoritos"></div>
   </section>
 </main>
 
-<!-- Modal Favoritos -->
 <div id="modalFavorito" class="modal oculto">
   <div class="modal-contenido">
     <h3>Añadir a favoritos</h3>

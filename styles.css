@@ -182,3 +182,44 @@ body.dark .grupo-favoritos h3 { color: #6BB6E8; }
   .grid-tipos { grid-template-columns: repeat(4, 1fr); }
   .grid-lineas { grid-template-columns: repeat(2, 1fr); }
 }
+/* ===== BOTÓN FLOTANTE ===== */
+.btn-flotante {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: var(--azul);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+  transition: transform 0.2s;
+}
+.btn-flotante:active {
+  transform: scale(0.95);
+}
+
+/* Ocultar el botón de volver antiguo de cada pantalla para no duplicar */
+.btn-volver {
+  display: none !important;
+}
+
+/* Botones del Manual */
+.btn-manual {
+  background: var(--tarjeta);
+  border: 2px solid var(--azul);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--sombra);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--texto);
+}
+.btn-manual:active { background: var(--fondo); }

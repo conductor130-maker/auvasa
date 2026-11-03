@@ -6,7 +6,9 @@ let grupoActual = null;
 let cocheIndexActual = 0;
 let listaGruposFiltrada = [];
 let favoritoPendiente = null;
+let manualActual = null;
 
+// ---------- CARGA DE DATOS MÚLTIPLE ----------
 async function cargarDatos() {
   const grid = document.getElementById('grid-tipos');
   grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:20px;">Cargando horarios...</p>';
@@ -16,7 +18,7 @@ async function cargarDatos() {
     'horarios_madrugada.json',
     'horarios_lanzaderas.json',
     'horarios_buho.json',
-    'horarios_futbol.json',
+    'horarios_servicios.json',
     'horarios_personal.json',
     'horarios_manual.json'
   ];
@@ -25,7 +27,7 @@ async function cargarDatos() {
     let todasLasLineas = [];
     for (const archivo of archivos) {
       try {
-        const res = await fetch('./' + archivo);
+        const res = await fetch('./' + archivo + '?v=3');
         if (res.ok) {
           const texto = await res.text();
           const json = JSON.parse(texto);
@@ -33,9 +35,7 @@ async function cargarDatos() {
             todasLasLineas = todasLasLineas.concat(json.lineas);
           }
         }
-      } catch (e) {
-        console.warn('Error en ' + archivo + ': ' + e.message);
-      }
+      } catch (e) { console.warn('Error en ' + archivo + ': ' + e.message); }
     }
 
     DATOS.lineas = todasLasLineas;
@@ -46,13 +46,14 @@ async function cargarDatos() {
   }
 }
 
+// ---------- CONFIGURACIÓN DE LOS BOTONES ----------
 const TIPOS = [
   { id: 'ordinaria', emoji: '🚌', nombre: 'Líneas Ordinarias' },
-  { id: 'matinal', emoji: '🏭', nombre: 'Matinales y Polígonos' },
+  { id: 'matinal', emoji: '🌙', nombre: 'Madrugada' },
   { id: 'laboral', emoji: '🏭', nombre: 'Polígonos' },
-  { id: 'buho', emoji: '🦉', nombre: 'Búhos' },
+  { id: 'buho', emoji: '🦉', nombre: 'Líneas Búho' },
   { id: 'futbol', emoji: '⚽', nombre: 'Fútbol' },
-  { id: 'lanzadera', emoji: '🎓', nombre: 'Lanzaderas y Uni' },
+  { id: 'lanzadera', emoji: '🎓', nombre: 'Lanzaderas' },
   { id: 'personal', emoji: '🚐', nombre: 'Personal' },
   { id: 'manual', emoji: '📖', nombre: 'Manual y Normativa' }
 ];
@@ -66,23 +67,46 @@ function renderTipos() {
   ).join('');
 }
 
-function irA(id) {
+// ---------- NAVEGACIÓN CON HISTORIAL ----------
+function irA(id, pushHistory = true) {
   document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
   document.getElementById(id).classList.add('activa');
   window.scrollTo(0, 0);
-}
-function volverAtras() {
-  const anterior = historial.pop();
-  if (anterior) irA(anterior);
-  else irA('pantalla-tipos');
-}
-function navegar(id) {
-  const actual = document.querySelector('.pantalla.activa');
-  if (actual && actual.id !== id) historial.push(actual.id);
-  irA(id);
+  
+  // Mostrar u ocultar el botón flotante (no se muestra en la pantalla de inicio)
+  const btnFlotante = document.getElementById('btn-volver-flotante');
+  if (id === 'pantalla-tipos') {
+    btnFlotante.classList.add('oculto');
+  } else {
+    btnFlotante.classList.remove('oculto');
+  }
+
+  // Manejo del historial del navegador
+  if (pushHistory) {
+    history.pushState({ pantalla: id }, '', '#' + id);
+  }
 }
 
+function volverAtras() {
+  history.back(); // Esto dispara el evento popstate
+}
+
+// Escuchar el botón "Atrás" del navegador
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.pantalla) {
+    irA(event.state.pantalla, false); // false para no crear un bucle infinito
+  } else {
+    irA('pantalla-tipos', false);
+  }
+});
+
+// ---------- RESTO DE FUNCIONES ----------
 function mostrarLineas(tipoId) {
+  if (tipoId === 'manual') {
+    mostrarManual();
+    return;
+  }
+
   const tipo = TIPOS.find(t => t.id === tipoId);
   document.getElementById('titulo-tipo').textContent = tipo.nombre;
   const lineas = DATOS.lineas.filter(l => l && l.tipo === tipoId);
@@ -101,217 +125,68 @@ function mostrarLineas(tipoId) {
       '</div>'
     ).join('');
   }
-  navegar('pantalla-lineas');
+  irA('pantalla-lineas');
 }
 
-function verRecorrido(id) {
-  const linea = DATOS.lineas.find(l => l.id === id);
-  if (!linea) return;
-  lineaActual = linea;
-  document.getElementById('titulo-recorrido').textContent = 'Línea ' + linea.id + ' – ' + linea.nombre;
-  let html = '';
-  if(linea.recorridos) {
-    linea.recorridos.forEach(r => {
-      html += '<div class="bloque-recorrido"><h3>' + (r.sentido || '') + '</h3><ol>' +
-        (r.paradas || []).map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
-    });
-  }
-  if (linea.letreros && linea.letreros.length) {
-    html += '<div class="bloque-recorrido"><h3>📟 Letreros CUBE</h3><ul class="lista-letreros">' +
-      linea.letreros.map(l => '<li>' + l + '</li>').join('') + '</ul></div>';
-  }
-  if (linea.notas && linea.notas.length) {
-    html += '<div class="bloque-recorrido"><h3>📝 Notas</h3><ul class="lista-notas">' +
-      linea.notas.map(n => '<li>' + n + '</li>').join('') + '</ul></div>';
-  }
-  if (linea.paginaRecorridoPDF) {
-    html += '<div class="bloque-recorrido"><a class="btn-pdf" href="libro_horarios.pdf#page=' + linea.paginaRecorridoPDF + '" target="_blank">📄 Ver PDF</a></div>';
-  }
-  document.getElementById('contenido-recorrido').innerHTML = html;
-  navegar('pantalla-recorrido');
-}
+// ... (Aquí irían las funciones verRecorrido, verGruposCoches, abrirGrupo, verDetalleCoche, guardarGrupoFavorito, abrirModalFavorito, cerrarModal, guardarFavorito, renderFavoritos y buscar EXACTAMENTE IGUAL que las tenías en el archivo anterior). 
 
-function verGruposCoches(id) {
-  const linea = DATOS.lineas.find(l => l.id === id);
-  if (!linea) return;
-  lineaActual = linea;
-  document.getElementById('titulo-horarios').textContent = 'Turnos Línea ' + linea.id;
-  document.getElementById('filtros-dia').innerHTML = '';
+// ---------- LÓGICA DEL MANUAL ----------
+function mostrarManual() {
+  // Buscamos la línea "MANUAL" en los datos cargados
+  const manual = DATOS.lineas.find(l => l.tipo === 'manual');
   
-  listaGruposFiltrada = linea.horarios || [];
-  const cont = document.getElementById('lista-horarios');
-  
-  if (!listaGruposFiltrada.length) {
-    cont.innerHTML = '<p style="text-align:center;padding:20px;">No hay horarios cargados.</p>';
-    navegar('pantalla-horarios');
+  if (!manual) {
+    document.getElementById('lista-manual').innerHTML = '<p>No hay datos de manual cargados.</p>';
+    irA('pantalla-manual');
     return;
   }
 
-  cont.innerHTML = listaGruposFiltrada.map((h, i) =>
-    '<button class="boton-grupo" onclick="abrirGrupo(' + i + ')">' +
-      '<div class="grupo-titulo">' + (h.nombre || 'Grupo') + '</div>' +
-      '<div class="grupo-sub">' + (h.tipoDia || '') + '</div>' +
-      '<div class="grupo-accion">Elegir horario ▶</div>' +
-    '</button>'
-  ).join('');
+  // Para este ejemplo, usaremos la estructura de "recorridos" del manual 
+  // para pintar los botones. 
+  // En tu archivo horarios_manual.json, tendrás que crear 4 recorridos (Mas datos 1, 2, 3, 4).
   
-  navegar('pantalla-horarios');
+  let htmlBotones = '';
+  let htmlContenido = '';
+
+  if (manual.recorridos && manual.recorridos.length > 0) {
+    manual.recorridos.forEach((bloque, i) => {
+      htmlBotones += `<button class="btn-manual" onclick="verManualDetalle(${i})">📄 ${bloque.sentido || 'Sección ' + (i+1)}</button>`;
+    });
+  } else {
+    htmlBotones = '<p>No hay secciones en el manual.</p>';
+  }
+
+  document.getElementById('lista-manual').innerHTML = htmlBotones;
+  document.getElementById('contenido-manual').innerHTML = '<p style="color:var(--texto-secundario);">Selecciona una sección para ver el contenido.</p>';
+  irA('pantalla-manual');
 }
 
-function abrirGrupo(grupoIndex) {
-  const grupo = listaGruposFiltrada[grupoIndex];
-  if (!grupo) return;
-  grupoActual = grupo;
+function verManualDetalle(index) {
+  const manual = DATOS.lineas.find(l => l.tipo === 'manual');
+  if (!manual || !manual.recorridos || !manual.recorridos[index]) return;
 
-  let coches = [];
-  if (Array.isArray(grupo.cochesDetalle) && grupo.cochesDetalle.length) {
-    coches = grupo.cochesDetalle;
-  } else if (Array.isArray(grupo.salidas) && grupo.salidas.length) {
-    coches = grupo.salidas.map(function (s, i) {
-      return {
-        nombre: s.horario || ('Horario ' + (i + 1)),
-        primeraSalida: s.hora || '—',
-        retirada: grupo.retirada || '',
-        salidas: [{ cabecera: s.cabecera, hora: s.hora }],
-        _incompleto: true
-      };
+  const bloque = manual.recorridos[index];
+  
+  // Pintamos el contenido en formato texto
+  let html = `<h3 style="color:var(--azul); margin-bottom: 10px;">${bloque.sentido}</h3>`;
+  html += `<ul style="padding-left: 20px; line-height: 1.8;">`;
+  if (bloque.paradas) {
+    bloque.paradas.forEach(texto => {
+      html += `<li>${texto}</li>`;
     });
   }
+  html += `</ul>`;
 
-  grupoActual.cochesDetalle = coches;
-  document.getElementById('titulo-coches').textContent = 'Línea ' + lineaActual.id + ' · ' + (grupo.nombre || '');
+  // Si el bloque tiene sub-botones (como el "mas datos 11, 12..."), los pintamos aquí:
+  // (Para esto, tendrías que meterlos en el JSON como sub-paradas y detectarlo aquí. 
+  // Te he dejado un ejemplo en el JSON más abajo).
 
-  if (!coches.length) {
-    document.getElementById('lista-coches').innerHTML = '<div style="padding:20px;text-align:center;">No hay turnos cargados.</div>';
-    navegar('pantalla-coches');
-    return;
-  }
-
-  const lista = document.getElementById('lista-coches');
-  lista.innerHTML = coches.map((coche, i) =>
-    '<button class="btn-coche" onclick="verDetalleCoche(' + i + ')">' +
-      '<div class="info-coche">' +
-        '<span class="titulo-coche">' + (coche.nombre || '') + '</span>' +
-        '<span class="retirada">' + (coche.retirada || '') + '</span>' +
-      '</div>' +
-      '<span class="primera">' + (coche.primeraSalida || '—') + '</span>' +
-    '</button>'
-  ).join('');
-
-  navegar('pantalla-coches');
+  document.getElementById('contenido-manual').innerHTML = html;
+  // Hacemos scroll hacia el contenido
+  document.getElementById('contenido-manual').scrollIntoView({ behavior: 'smooth' });
 }
 
-function verDetalleCoche(cocheIndex) {
-  cocheIndexActual = cocheIndex;
-  const coche = grupoActual.cochesDetalle[cocheIndex];
-  if (!coche) return;
-  const cont = document.getElementById('detalle-horario');
-
-  const primera = coche.salidas && coche.salidas[0];
-  const ultima = coche.salidas && coche.salidas[coche.salidas.length - 1];
-  const incompleto = coche._incompleto || (coche.salidas && coche.salidas.length <= 1);
-
-  let html = '';
-
-  if (incompleto) {
-    html += '<div style="background:#FFF4E0;border-left:4px solid #F39200;padding:14px;border-radius:10px;margin-bottom:16px;font-size:0.9rem;color:#6B4A00;">' +
-      '<b>⚠️ Turno incompleto en la app.</b><br>Consulta el PDF oficial para ver todas las salidas de este coche.</div>';
-  }
-
-  html += '<div class="tarjeta-principal">' +
-    '<h3>L' + lineaActual.id + ' · ' + (grupoActual.nombre || '') + ' · ' + (coche.nombre || '') + '</h3>' +
-    '<div class="sub">' + (grupoActual.tipoDia || '') + '</div>' +
-    '<div class="dato"><span>Primera salida</span><strong>' + (primera ? primera.hora + ' (' + primera.cabecera + ')' : '—') + '</strong></div>' +
-    '<div class="dato"><span>Última salida</span><strong>' + (ultima ? ultima.hora + ' (' + ultima.cabecera + ')' : '—') + '</strong></div>' +
-    '<div class="dato"><span>Retirada</span><strong>' + (coche.retirada || '—') + '</strong></div>' +
-  '</div>';
-
-  const total = grupoActual.cochesDetalle.length;
-  html += '<div class="nav-horarios">' +
-    '<button ' + (cocheIndex === 0 ? 'disabled' : '') + ' onclick="verDetalleCoche(' + (cocheIndex - 1) + ')">◀ Anterior</button>' +
-    '<button ' + (cocheIndex === total - 1 ? 'disabled' : '') + ' onclick="verDetalleCoche(' + (cocheIndex + 1) + ')">Siguiente ▶</button>' +
-  '</div>';
-
-  if (coche.salidas && coche.salidas.length > 1) {
-    const cabeceras = [];
-    coche.salidas.forEach(s => { if (cabeceras.indexOf(s.cabecera) === -1) cabeceras.push(s.cabecera); });
-
-    if (cabeceras.length === 2) {
-      const col1 = cabeceras[0], col2 = cabeceras[1];
-      const filas1 = coche.salidas.filter(s => s.cabecera === col1);
-      const filas2 = coche.salidas.filter(s => s.cabecera === col2);
-      const maxFilas = Math.max(filas1.length, filas2.length);
-      html += '<table class="tabla-pdf"><thead><tr><th>' + col1 + '</th><th>' + col2 + '</th></tr></thead><tbody>';
-      for (let i = 0; i < maxFilas; i++) {
-        html += '<tr><td>' + (filas1[i] ? filas1[i].hora : '') + '</td><td>' + (filas2[i] ? filas2[i].hora : '') + '</td></tr>';
-      }
-      html += '</tbody></table>';
-    } else {
-      html += '<table class="tabla-pdf"><thead><tr><th>Cabecera</th><th>Hora</th></tr></thead><tbody>' +
-        coche.salidas.map(s => '<tr><td>' + (s.cabecera || '') + '</td><td>' + (s.hora || '') + '</td></tr>').join('') + '</tbody></table>';
-    }
-  }
-
-  html += '<div class="acciones-detalle">' +
-    '<button class="btn-fav" onclick="abrirModalFavorito()">⭐ Guardar</button>' +
-    (grupoActual.paginaPDF ? '<a class="btn-pdf-detalle" href="libro_horarios.pdf#page=' + grupoActual.paginaPDF + '" target="_blank">📄 Ver PDF</a>' : '') +
-  '</div>';
-
-  cont.innerHTML = html;
-  navegar('pantalla-detalle');
-}
-
-function abrirModalFavorito() {
-  favoritoPendiente = {
-    lineaId: lineaActual.id, lineaNombre: lineaActual.nombre,
-    grupo: grupoActual.nombre,
-    coche: grupoActual.cochesDetalle[cocheIndexActual].nombre,
-    tipoDia: grupoActual.tipoDia,
-    paginaPDF: grupoActual.paginaPDF || null,
-    primeraSalida: grupoActual.cochesDetalle[cocheIndexActual].primeraSalida
-  };
-  document.getElementById('modalFavorito').classList.remove('oculto');
-  document.getElementById('nombreGrupo').value = '';
-  const cont = document.getElementById('gruposExistentes');
-  cont.innerHTML = favoritos.grupos.map((g, i) =>
-    '<span class="grupo-opcion" onclick="document.getElementById(\'nombreGrupo\').value=\'' + g.nombre + '\'; this.classList.add(\'seleccionado\')">' + g.nombre + '</span>'
-  ).join('');
-}
-
-function cerrarModal() { document.getElementById('modalFavorito').classList.add('oculto'); }
-
-function guardarFavorito() {
-  const nombre = document.getElementById('nombreGrupo').value.trim();
-  if (!nombre) return;
-  let grupo = favoritos.grupos.find(g => g.nombre.toLowerCase() === nombre.toLowerCase());
-  if (!grupo) { grupo = { nombre: nombre, horarios: [] }; favoritos.grupos.push(grupo); }
-  grupo.horarios.push(favoritoPendiente);
-  localStorage.setItem('auvasa_favoritos', JSON.stringify(favoritos));
-  cerrarModal();
-  alert('Guardado en ' + nombre);
-}
-
-function renderFavoritos() {
-  const cont = document.getElementById('contenido-favoritos');
-  if (!favoritos.grupos.length) {
-    cont.innerHTML = '<p style="text-align:center;padding:40px;">No hay favoritos.</p>'; return;
-  }
-  cont.innerHTML = favoritos.grupos.map((g, gi) =>
-    '<div class="grupo-favoritos"><h3>📁 ' + g.nombre + '</h3>' +
-    g.horarios.map((f, fi) =>
-      '<div class="favorito-item"><div><b>L' + f.lineaId + ' · ' + f.coche + '</b><br><small>' + f.tipoDia + '</small></div>' +
-      '<button onclick="favoritos.grupos[' + gi + '].horarios.splice(' + fi + ',1); renderFavoritos();">🗑️</button></div>'
-    ).join('') + '</div>'
-  ).join('');
-}
-
-function buscar(t) {
-  if (!t) { document.getElementById('resultadosBusqueda').innerHTML = ''; return; }
-  const cont = document.getElementById('resultadosBusqueda');
-  if (!DATOS.lineas) return;
-  const res = DATOS.lineas.filter(l => l && (l.id.toLowerCase().includes(t.toLowerCase()) || l.nombre.toLowerCase().includes(t.toLowerCase())));
-  cont.innerHTML = res.map(l => '<div class="resultado" onclick="document.getElementById(\'barraBusqueda\').classList.add(\'oculto\'); verRecorrido(\'' + l.id + '\')">Línea ' + l.id + ' - ' + l.nombre + '</div>').join('');
-}
+// ... (El resto de funciones de favoritos y búsqueda van aquí).
 
 document.addEventListener('DOMContentLoaded', function () {
   if (localStorage.getItem('auvasa_dark') === '1') document.body.classList.add('dark');
@@ -321,7 +196,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.getElementById('btnBuscar').addEventListener('click', function() { document.getElementById('barraBusqueda').classList.toggle('oculto'); });
   document.getElementById('inputBusqueda').addEventListener('input', function(e) { buscar(e.target.value); });
-  document.getElementById('btnFavoritos').addEventListener('click', function() { renderFavoritos(); navegar('pantalla-favoritos'); });
+  document.getElementById('btnFavoritos').addEventListener('click', function() { renderFavoritos(); irA('pantalla-favoritos'); });
+  
   cargarDatos();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 });
