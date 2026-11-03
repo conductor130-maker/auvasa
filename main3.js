@@ -59,7 +59,7 @@ function navegar(id) {
 const TIPOS = [
   { id: 'ordinaria', emoji: '🚌', nombre: 'Líneas Ordinarias' },
   { id: 'matinal', emoji: '🌅', nombre: 'Líneas Matinales' },
-  { id: 'laboral', emoji: '🏭', nombre: 'Laborales y Polígonos' },
+  { id: 'pruebas', emoji: '🏭', nombre: 'Laborales y Polígonos' },
   { id: 'buho', emoji: '🦉', nombre: 'Líneas Búho' },
   { id: 'futbol', emoji: '⚽', nombre: 'Servicios Fútbol' },
   { id: 'lanzadera', emoji: '🎓', nombre: 'Lanzaderas y Univ.' },
